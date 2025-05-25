@@ -11,54 +11,81 @@ public class Main {
 
 
         do {
-            try{
+            try {
                 System.out.println("""
-              Menu principal:
-                1) Agregar producto
-                2) Listar productos
-                3) Buscar/Actualizar producto
-                4) Eliminar producto
-                5) Crear un pedido
-                6) Listar pedidos
-                7) Salir
-              
-              Elija una opción:
-              """);
+                        Menu principal:
+                          1) Agregar producto
+                          2) Listar productos
+                          3) Buscar/Actualizar producto
+                          4) Eliminar producto
+                          5) Crear un pedido
+                          6) Listar pedidos
+                          7) Salir
+                        
+                        Elija una opción:
+                        """);
                 opcionUsuario = entrada.nextInt();
 
-                switch (opcionUsuario){
+                switch (opcionUsuario) {
                     case 1 -> agregarProducto(productos);
                     case 2 -> listarProductos(productos);
                     case 3 -> buscarProducto(productos);
                     case 4 -> eliminarProducto(productos);
-                    case 5 -> System.out.println("Crear un pedido...");
-                    case 6 -> System.out.println("Listar pedidos...");
+                    case 5 -> agregarPedido(pedidos,productos);
+                    case 6 -> listarProductos(productos);
                     case 7 -> System.out.println("Gracias por usar la app!");
-                    default -> System.out.println("Opcion incorrecta");
                 }
-            }catch (RuntimeException e){
+            } catch (RuntimeException e) {
                 System.out.println(e.getMessage());
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Hubo un error inesperado");
             }
-        }while (opcionUsuario != 7);
+        } while (opcionUsuario != 7);
 
     }
 
-    private static void agregarPedido(ArrayList<Pedido> pedidos){
 
-        // buscar producto por id, si lo encontramos le pedimos confirmacion
-        // preguntamos cuanto quiere agregar de ese producto, comprobamos que hay stock sufiente
-        // y lo cargamos al pedido
-        // podemos dejar todo en un bucle asi el usuario puede cargar varios productos al pedido
+    public static void agregarPedido(ArrayList<Pedido> pedidos, ArrayList<Producto> productos) {
+        Scanner entrada = new Scanner(System.in);
         Pedido nuevoPedido = new Pedido();
-//        nuevoPedido.agregarProductoAPedido(new Producto());
+        while (true) {
+            System.out.println("Ingrese el nombre del producto que desea agregar (o escriba 'salir' para finalizar): ");
+            String nombreProducto = entrada.nextLine().trim();
 
+            if (nombreProducto.equalsIgnoreCase("salir")) {
+                break;
+            }
+
+            ArrayList<Producto> productoSeleccionado = buscarProductoPorNombre(productos, nombreProducto);
+
+            if (productoSeleccionado.isEmpty()) {
+                System.out.println("No encontramos productos");
+                continue;
+            }
+            Producto p = productoSeleccionado.get(0);
+            System.out.printf("Ingrese la cantidad de '%s' que desea agregar: ", p.getNombre());
+            int cantidad = entrada.nextInt();
+            entrada.nextLine();
+
+            nuevoPedido.agregarProductoAPedido(p, cantidad);
+            System.out.println(" Producto agregado al pedido.");
+        }
 
         pedidos.add(nuevoPedido);
+        System.out.println(" Pedido registrado exitosamente!");
     }
+
+    private static ArrayList<Producto> buscarProductoPorNombre(ArrayList<Producto> productos, String nombre) {
+        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+        for (Producto producto : productos) {
+            if (producto.contieneNombre(nombre)) {
+                productosEncontrados.add(producto);
+            }
+        }
+        return productosEncontrados;
+    }
+
 
     private static void eliminarProducto(ArrayList<Producto> productos) {
         Scanner entrada = new Scanner(System.in);
@@ -66,8 +93,8 @@ public class Main {
         int idAEliminar = entrada.nextInt();
         boolean eliminado = false;
         boolean encontrado = false;
-        for (Producto producto : productos){
-            if (producto.getId() == idAEliminar){
+        for (Producto producto : productos) {
+            if (producto.getId() == idAEliminar) {
                 encontrado = true;
                 System.out.println("El producto que quiere eliminar es el siguiente: ");
                 producto.mostrarInfo();
@@ -75,7 +102,7 @@ public class Main {
                 System.out.println("1 - SI");
                 System.out.println("2 - NO");
                 int opcionEliminar = entrada.nextInt();
-                if (opcionEliminar == 1){
+                if (opcionEliminar == 1) {
                     System.out.println("ELIMINANDO");
                     productos.remove(producto);
                     eliminado = true;
@@ -84,11 +111,11 @@ public class Main {
             }
         }
 
-        if (!encontrado){
+        if (!encontrado) {
             throw new RuntimeException("No encontramos ningun producto con el id: " + idAEliminar);
         }
 
-        if (eliminado){
+        if (eliminado) {
             System.out.println("Eliminado con exito");
         }
     }
@@ -97,70 +124,72 @@ public class Main {
         System.out.println("Buscador de productos: ");
         Scanner entrada = new Scanner(System.in);
         String busqueda = entrada.nextLine();
-        ArrayList<Producto> productosEncontrados = new ArrayList<>();
+        ArrayList<Producto> productosEncontrados = buscarProductoPorNombre(productos, busqueda);
 
-        for (Producto producto : productos){
-            if (producto.contieneNombre(busqueda)){
-                productosEncontrados.add(producto);
-            }
-        }
-
-        if (productosEncontrados.isEmpty()){
-            System.out.println("No encontramos productos....");
-        }else{
-            for (Producto producto : productosEncontrados){
+        if (productosEncontrados.isEmpty()) {
+            System.out.println("No encontramos productos");
+        } else {
+            for (Producto producto : productosEncontrados) {
                 producto.mostrarInfo();
             }
         }
     }
 
     private static void listarProductos(ArrayList<Producto> productos) {
-        if (productos.isEmpty()){
+        if (productos.isEmpty()) {
             System.out.println("No hay producto todavia :(");
-        }else {
-            for (Producto producto : productos){
+        } else {
+            for (Producto producto : productos) {
                 producto.mostrarInfo();
             }
         }
     }
 
-    public static void agregarProducto(ArrayList<Producto> productos){
-        Scanner entrada = new Scanner(System.in);
-        System.out.println("Menu para agregar un producto:");
-        System.out.println("Ingrese el nombre del producto: ");
-        String nombre = entrada.nextLine();
-        System.out.printf("Ingrese el precio de %s: ", nombre);
-        double precio = entrada.nextDouble();
-        System.out.printf("Ingrese el stock de %s: ", nombre);
-        int stock = entrada.nextInt();
-        Producto producto = new Producto(nombre, precio, stock);
 
+    public static void agregarProducto(ArrayList<Producto> productos) {
+        Scanner entrada = new Scanner(System.in);
+        System.out.println("""
+                Menu para agregar un producto
+                Ingrese el nombre del producto:
+                """)
+        ;
+        String nombre = entrada.nextLine();
+        double precio = 0;
+        while (true) {
+            try {
+                System.out.printf("Ingrese el precio de %s: ", nombre);
+                precio = entrada.nextDouble();
+                if (precio > 0) {
+                    break;
+                } else {
+                    System.out.println("El precio debe ser un valor positivo.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: Ingrese un número válido.");
+                entrada.nextLine();
+            }
+        }
+
+        int stock = 0;
+        while (true) {
+            try {
+                System.out.printf("Ingrese el stock de %s: ", nombre);
+                stock = entrada.nextInt();
+                if (stock >= 0) {
+                    break;
+                } else {
+                    System.out.println("El stock no puede ser negativo.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: Ingrese un número válido.");
+                entrada.nextLine();
+            }
+        }
+
+
+        Producto producto = new Producto(nombre, precio, stock);
         productos.add(producto);
 
-        System.out.println("☣ Producto cargado exitosamente! ☣");
+        System.out.println("Producto cargado exitosamente!");
     }
-
-    public static void agregarProductosDeEjemplo(ArrayList<Producto> productos) {
-        productos.add(new Producto("Monitor", 1000, 10));
-        productos.add(new Producto("Micrófono", 2000, 10));
-        productos.add(new Producto("Teclado mecánico", 1500, 15));
-        productos.add(new Producto("Mouse gamer", 1200, 20));
-        productos.add(new Producto("Laptop", 15000, 5));
-        productos.add(new Producto("Tablet", 8000, 7));
-        productos.add(new Producto("Disco duro externo", 2500, 12));
-        productos.add(new Producto("Memoria USB 64GB", 500, 25));
-        productos.add(new Producto("Router Wi-Fi", 1800, 10));
-        productos.add(new Producto("Smartphone", 12000, 8));
-        productos.add(new Producto("Audífonos Bluetooth", 2200, 18));
-        productos.add(new Producto("Cámara Web HD", 1300, 10));
-        productos.add(new Producto("Impresora", 4000, 6));
-        productos.add(new Producto("Proyector", 9000, 4));
-        productos.add(new Producto("Reproductor multimedia", 3000, 9));
-        productos.add(new Producto("Smartwatch", 3500, 11));
-        productos.add(new Producto("Lector de tarjetas", 800, 14));
-        productos.add(new Producto("Estabilizador de voltaje", 1100, 10));
-        productos.add(new Producto("Cable HDMI", 300, 30));
-        productos.add(new Producto("Panel táctil USB", 2000, 5));
-    }
-
 }

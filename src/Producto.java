@@ -34,6 +34,23 @@ public class Producto {
         return nombreMinuscula.contains(busqueda.toLowerCase());
     }
 
+
+
+    public void venderProducto(int cantidad) {
+        if (cantidad <= 0) {
+            System.out.println("La cantidad debe ser mayor a cero.");
+        }
+
+        if (cantidad > this.stock) {
+            System.out.println(" Stock insuficiente para " + this.nombre + ". Disponible: " + this.stock);
+        }else{
+
+            this.stock -= cantidad;
+            System.out.println(" Venta realizada: " + cantidad + " unidades de " + this.nombre);
+        }
+
+    }
+
     // GETTERS y SETTERS
     public int getId() {
         return id;
